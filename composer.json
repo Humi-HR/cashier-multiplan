@@ -1,5 +1,5 @@
 {
-    "name": "jurihub/cashier-multiplan",
+    "name": "humi-hr/cashier-multiplan",
     "version": "1.0.6",
     "description": "Laravel Cashier Multiplan",
     "keywords": ["laravel", "stripe", "billing"],
@@ -10,10 +10,6 @@
             "email": "info@jurihub.fr"
         }
     ],
-    "dist": {
-        "url": "https://github.com/jurihub/cashier-multiplan/archive/1.0.6.zip",
-        "type": "zip"
-    },
     "require": {
         "php": ">=5.5.9",
         "illuminate/database": "~5.3",
