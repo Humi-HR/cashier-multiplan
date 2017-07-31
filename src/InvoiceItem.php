@@ -1,6 +1,6 @@
 <?php
 
-namespace Jurihub\CashierMultiplan;
+namespace Laravel\Cashier;
 
 use Carbon\Carbon;
 
@@ -50,7 +50,8 @@ class InvoiceItem
      */
     public function startDate()
     {
-        if ($this->isSubscription()) {
+        if ($this->isSubscription())
+        {
             return $this->startDateAsCarbon()->toFormattedDateString();
         }
     }
@@ -62,7 +63,8 @@ class InvoiceItem
      */
     public function endDate()
     {
-        if ($this->isSubscription()) {
+        if ($this->isSubscription())
+        {
             return $this->endDateAsCarbon()->toFormattedDateString();
         }
     }
@@ -74,7 +76,8 @@ class InvoiceItem
      */
     public function startDateAsCarbon()
     {
-        if ($this->isSubscription()) {
+        if ($this->isSubscription())
+        {
             return Carbon::createFromTimestampUTC($this->item->period->start);
         }
     }
@@ -86,7 +89,8 @@ class InvoiceItem
      */
     public function endDateAsCarbon()
     {
-        if ($this->isSubscription()) {
+        if ($this->isSubscription())
+        {
             return Carbon::createFromTimestampUTC($this->item->period->end);
         }
     }

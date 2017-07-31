@@ -1,6 +1,6 @@
 <?php
 
-namespace Jurihub\CashierMultiplan;
+namespace Laravel\Cashier;
 
 use Carbon\Carbon;
 use Dompdf\Dompdf;
@@ -110,7 +110,7 @@ class Invoice
     public function hasDiscount()
     {
         return $this->invoice->subtotal > 0 && $this->invoice->subtotal != $this->invoice->total
-          && ! is_null($this->invoice->discount);
+        && !is_null($this->invoice->discount);
     }
 
     /**
@@ -130,7 +130,8 @@ class Invoice
      */
     public function coupon()
     {
-        if (isset($this->invoice->discount)) {
+        if (isset($this->invoice->discount))
+        {
             return $this->invoice->discount->coupon->id;
         }
     }
@@ -152,7 +153,8 @@ class Invoice
      */
     public function percentOff()
     {
-        if ($this->coupon()) {
+        if ($this->coupon())
+        {
             return $this->invoice->discount->coupon->percent_off;
         }
 
@@ -166,9 +168,12 @@ class Invoice
      */
     public function amountOff()
     {
-        if (isset($this->invoice->discount->coupon->amount_off)) {
+        if (isset($this->invoice->discount->coupon->amount_off))
+        {
             return $this->formatAmount($this->invoice->discount->coupon->amount_off);
-        } else {
+        }
+        else
+        {
             return $this->formatAmount(0);
         }
     }
@@ -203,9 +208,12 @@ class Invoice
     {
         $lineItems = [];
 
-        if (isset($this->lines->data)) {
-            foreach ($this->lines->data as $line) {
-                if ($line->type == $type) {
+        if (isset($this->lines->data))
+        {
+            foreach ($this->lines->data as $line)
+            {
+                if ($line->type == $type)
+                {
                     $lineItems[] = new InvoiceItem($this->owner, $line);
                 }
             }
@@ -248,11 +256,13 @@ class Invoice
      */
     public function pdf(array $data)
     {
-        if (! defined('DOMPDF_ENABLE_AUTOLOAD')) {
+        if (!defined('DOMPDF_ENABLE_AUTOLOAD'))
+        {
             define('DOMPDF_ENABLE_AUTOLOAD', false);
         }
 
-        if (file_exists($configPath = base_path().'/vendor/dompdf/dompdf/dompdf_config.inc.php')) {
+        if (file_exists($configPath = base_path() . '/vendor/dompdf/dompdf/dompdf_config.inc.php'))
+        {
             require_once $configPath;
         }
 
@@ -273,11 +283,11 @@ class Invoice
      */
     public function download(array $data)
     {
-        $filename = $data['product'].'_'.$this->date()->month.'_'.$this->date()->year.'.pdf';
+        $filename = $data['product'] . '_' . $this->date()->month . '_' . $this->date()->year . '.pdf';
 
         return new Response($this->pdf($data), 200, [
             'Content-Description' => 'File Transfer',
-            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
             'Content-Transfer-Encoding' => 'binary',
             'Content-Type' => 'application/pdf',
         ]);
@@ -291,7 +301,7 @@ class Invoice
     public function rawStartingBalance()
     {
         return isset($this->invoice->starting_balance)
-                   ? $this->invoice->starting_balance : 0;
+        ? $this->invoice->starting_balance : 0;
     }
 
     /**

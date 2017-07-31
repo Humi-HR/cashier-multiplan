@@ -1,6 +1,6 @@
 <?php
 
-namespace Jurihub\CashierMultiplan;
+namespace Laravel\Cashier;
 
 use Illuminate\Support\ServiceProvider;
 
@@ -13,10 +13,10 @@ class CashierServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->loadViewsFrom(__DIR__.'/../resources/views', 'cashier');
+        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'cashier');
 
         $this->publishes([
-            __DIR__.'/../resources/views' => base_path('resources/views/vendor/cashier'),
+            __DIR__ . '/../resources/views' => base_path('resources/views/vendor/cashier'),
         ]);
     }
 

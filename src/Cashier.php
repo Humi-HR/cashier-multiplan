@@ -1,6 +1,6 @@
 <?php
 
-namespace Jurihub\CashierMultiplan;
+namespace Laravel\Cashier;
 
 use Exception;
 
@@ -49,7 +49,8 @@ class Cashier
      */
     protected static function guessCurrencySymbol($currency)
     {
-        switch (strtolower($currency)) {
+        switch (strtolower($currency))
+        {
             case 'usd':
             case 'aud':
             case 'cad':
@@ -113,16 +114,18 @@ class Cashier
      */
     public static function formatAmount($amount)
     {
-        if (static::$formatCurrencyUsing) {
+        if (static::$formatCurrencyUsing)
+        {
             return call_user_func(static::$formatCurrencyUsing, $amount);
         }
 
         $amount = number_format($amount / 100, 2);
 
-        if (starts_with($amount, '-')) {
-            return '-'.static::usesCurrencySymbol().ltrim($amount, '-');
+        if (starts_with($amount, '-'))
+        {
+            return '-' . static::usesCurrencySymbol() . ltrim($amount, '-');
         }
 
-        return static::usesCurrencySymbol().$amount;
+        return static::usesCurrencySymbol() . $amount;
     }
 }

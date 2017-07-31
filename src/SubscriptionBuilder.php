@@ -1,6 +1,6 @@
 <?php
 
-namespace Jurihub\CashierMultiplan;
+namespace Laravel\Cashier;
 
 use Carbon\Carbon;
 
@@ -178,9 +178,12 @@ class SubscriptionBuilder
 
         $subscription = $customer->subscriptions->create($this->buildPayload());
 
-        if ($this->skipTrial) {
+        if ($this->skipTrial)
+        {
             $trialEndsAt = null;
-        } else {
+        }
+        else
+        {
             $trialEndsAt = $this->trialExpires;
         }
 
@@ -203,12 +206,16 @@ class SubscriptionBuilder
      */
     protected function getStripeCustomer($token = null, array $options = [])
     {
-        if (! $this->owner->stripe_id) {
+        if (!$this->owner->stripe_id)
+        {
             $customer = $this->owner->createAsStripeCustomer($token, $options);
-        } else {
+        }
+        else
+        {
             $customer = $this->owner->asStripeCustomer();
 
-            if ($token) {
+            if ($token)
+            {
                 $this->owner->updateCard($token);
             }
         }
@@ -240,11 +247,13 @@ class SubscriptionBuilder
      */
     protected function getTrialEndForPayload()
     {
-        if ($this->skipTrial) {
+        if ($this->skipTrial)
+        {
             return 'now';
         }
 
-        if ($this->trialExpires) {
+        if ($this->trialExpires)
+        {
             return $this->trialExpires->getTimestamp();
         }
     }
@@ -256,7 +265,8 @@ class SubscriptionBuilder
      */
     protected function getTaxPercentageForPayload()
     {
-        if ($taxPercentage = $this->owner->taxPercentage()) {
+        if ($taxPercentage = $this->owner->taxPercentage())
+        {
             return $taxPercentage;
         }
     }

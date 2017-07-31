@@ -1,19 +1,19 @@
 <?php
 
-namespace Jurihub\CashierMultiplan;
+namespace Laravel\Cashier;
 
-use Exception;
 use Carbon\Carbon;
-use InvalidArgumentException;
-use Stripe\Token as StripeToken;
-use Stripe\Source as StripeSource;
-use Stripe\Charge as StripeCharge;
-use Stripe\Refund as StripeRefund;
+use Exception;
 use Illuminate\Support\Collection;
-use Stripe\Invoice as StripeInvoice;
+use InvalidArgumentException;
+use Stripe\Charge as StripeCharge;
 use Stripe\Customer as StripeCustomer;
-use Stripe\InvoiceItem as StripeInvoiceItem;
 use Stripe\Error\InvalidRequest as StripeErrorInvalidRequest;
+use Stripe\Invoice as StripeInvoice;
+use Stripe\InvoiceItem as StripeInvoiceItem;
+use Stripe\Refund as StripeRefund;
+use Stripe\Source as StripeSource;
+use Stripe\Token as StripeToken;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 trait Billable
@@ -42,11 +42,13 @@ trait Billable
 
         $options['amount'] = $amount;
 
-        if (! array_key_exists('source', $options) && $this->stripe_id) {
+        if (!array_key_exists('source', $options) && $this->stripe_id)
+        {
             $options['customer'] = $this->stripe_id;
         }
 
-        if (! array_key_exists('source', $options) && ! array_key_exists('customer', $options)) {
+        if (!array_key_exists('source', $options) && !array_key_exists('customer', $options))
+        {
             throw new InvalidArgumentException('No payment source provided.');
         }
 
@@ -91,8 +93,9 @@ trait Billable
      */
     public function tab($description, $amount, array $options = [])
     {
-        if (! $this->stripe_id) {
-            throw new InvalidArgumentException(class_basename($this).' is not a Stripe customer. See the createAsStripeCustomer method.');
+        if (!$this->stripe_id)
+        {
+            throw new InvalidArgumentException(class_basename($this) . ' is not a Stripe customer. See the createAsStripeCustomer method.');
         }
 
         $options = array_merge([
@@ -145,18 +148,20 @@ trait Billable
      */
     public function onTrial($subscription = 'default', $plan = null)
     {
-        if (func_num_args() === 0 && $this->onGenericTrial()) {
+        if (func_num_args() === 0 && $this->onGenericTrial())
+        {
             return true;
         }
 
         $subscription = $this->subscription($subscription);
 
-        if (is_null($plan)) {
+        if (is_null($plan))
+        {
             return $subscription && $subscription->onTrial();
         }
 
         return $subscription && $subscription->onTrial() &&
-               $subscription->stripe_plan === $plan;
+        $subscription->stripe_plan === $plan;
     }
 
     /**
@@ -180,21 +185,25 @@ trait Billable
     {
         $subscription = $this->subscription($subscription);
 
-        if (is_null($subscription)) {
+        if (is_null($subscription))
+        {
             return false;
         }
 
-        if (is_null($plan)) {
+        if (is_null($plan))
+        {
             return $subscription->valid();
         }
 
-        if ($subscription->valid() && $subscription->stripe_plan === $plan) {
+        if ($subscription->valid() && $subscription->stripe_plan === $plan)
+        {
             return true;
         }
 
         $plan = $this->subscriptionItem($plan);
 
-        if (!is_null($plan) && $subscription->valid()) {
+        if (!is_null($plan) && $subscription->valid())
+        {
             return true;
         }
 
@@ -209,12 +218,14 @@ trait Billable
      */
     public function subscription($subscription = 'default')
     {
-        return $this->subscriptions->sortByDesc(function ($value) {
+        return $this->subscriptions->sortByDesc(function ($value)
+        {
             return $value->created_at->getTimestamp();
         })
-        ->first(function ($value) use ($subscription) {
-            return $value->name === $subscription;
-        });
+            ->first(function ($value) use ($subscription)
+        {
+                return $value->name === $subscription;
+            });
     }
 
     /**
@@ -234,10 +245,13 @@ trait Billable
      */
     public function invoice()
     {
-        if ($this->stripe_id) {
+        if ($this->stripe_id)
+        {
             try {
                 return StripeInvoice::create(['customer' => $this->stripe_id], $this->getStripeKey())->pay();
-            } catch (StripeErrorInvalidRequest $e) {
+            }
+            catch (StripeErrorInvalidRequest $e)
+            {
                 return false;
             }
         }
@@ -258,7 +272,9 @@ trait Billable
             );
 
             return new Invoice($this, $stripeInvoice);
-        } catch (StripeErrorInvalidRequest $e) {
+        }
+        catch (StripeErrorInvalidRequest $e)
+        {
             //
         }
     }
@@ -273,7 +289,9 @@ trait Billable
     {
         try {
             return new Invoice($this, StripeInvoice::retrieve($id, $this->getStripeKey()));
-        } catch (Exception $e) {
+        }
+        catch (Exception $e)
+        {
             //
         }
     }
@@ -288,7 +306,8 @@ trait Billable
     {
         $invoice = $this->findInvoice($id);
 
-        if (is_null($invoice)) {
+        if (is_null($invoice))
+        {
             throw new NotFoundHttpException;
         }
 
@@ -326,9 +345,12 @@ trait Billable
         // Here we will loop through the Stripe invoices and create our own custom Invoice
         // instances that have more helper methods and are generally more convenient to
         // work with than the plain Stripe objects are. Then, we'll return the array.
-        if (! is_null($stripeInvoices)) {
-            foreach ($stripeInvoices->data as $invoice) {
-                if ($invoice->paid || $includePending) {
+        if (!is_null($stripeInvoices))
+        {
+            foreach ($stripeInvoices->data as $invoice)
+            {
+                if ($invoice->paid || $includePending)
+                {
                     $invoices[] = new Invoice($this, $invoice);
                 }
             }
@@ -364,8 +386,10 @@ trait Billable
             ['object' => 'card'] + $parameters
         );
 
-        if (! is_null($stripeCards)) {
-            foreach ($stripeCards->data as $card) {
+        if (!is_null($stripeCards))
+        {
+            foreach ($stripeCards->data as $card)
+            {
                 $cards[] = new Card($this, $card);
             }
         }
@@ -387,7 +411,8 @@ trait Billable
         // If the given token already has the card as their default source, we can just
         // bail out of the method now. We don't need to keep adding the same card to
         // a model's account every time we go through this particular method call.
-        if ($token->card->id === $customer->default_source) {
+        if ($token->card->id === $customer->default_source)
+        {
             return;
         }
 
@@ -401,8 +426,8 @@ trait Billable
         // four digits and the card brand on the record in the database. This allows
         // us to display the information on the front-end when updating the cards.
         $source = $customer->default_source
-                    ? $customer->sources->retrieve($customer->default_source)
-                    : null;
+        ? $customer->sources->retrieve($customer->default_source)
+        : null;
 
         $this->fillCardDetails($source);
 
@@ -423,7 +448,8 @@ trait Billable
         // If the given token already has the iban as their default source, we can just
         // bail out of the method now. We don't need to keep adding the same iban to
         // a model's account every time we go through this particular method call.
-        if ($token->id === $customer->default_source) {
+        if ($token->id === $customer->default_source)
+        {
             return;
         }
 
@@ -437,8 +463,8 @@ trait Billable
         // informations in the database. This allows us to display the information on
         // the front-end when updating the iban.
         $source = $customer->default_source
-                    ? $customer->sources->retrieve($customer->default_source)
-                    : null;
+        ? $customer->sources->retrieve($customer->default_source)
+        : null;
 
         $this->fillSepaDetails($source);
         $this->save();
@@ -455,16 +481,21 @@ trait Billable
 
         $defaultCard = null;
 
-        foreach ($customer->sources->data as $card) {
-            if ($card->id === $customer->default_source) {
+        foreach ($customer->sources->data as $card)
+        {
+            if ($card->id === $customer->default_source)
+            {
                 $defaultCard = $card;
                 break;
             }
         }
 
-        if ($defaultCard) {
+        if ($defaultCard)
+        {
             $this->fillCardDetails($defaultCard)->save();
-        } else {
+        }
+        else
+        {
             $this->forceFill([
                 'card_brand' => null,
                 'card_last_four' => null,
@@ -485,16 +516,21 @@ trait Billable
 
         $defaultSepa = null;
 
-        foreach ($customer->sources->data as $sepa) {
-            if ($sepa->id === $customer->default_source) {
+        foreach ($customer->sources->data as $sepa)
+        {
+            if ($sepa->id === $customer->default_source)
+            {
                 $defaultSepa = $sepa;
                 break;
             }
         }
 
-        if ($defaultSepa) {
+        if ($defaultSepa)
+        {
             $this->fillSepaDetails($defaultSepa)->save();
-        } else {
+        }
+        else
+        {
             $this->forceFill([
                 'sepa_bank_code' => null,
                 'sepa_country' => null,
@@ -516,7 +552,8 @@ trait Billable
      */
     protected function fillCardDetails($card)
     {
-        if ($card) {
+        if ($card)
+        {
             $this->card_brand = $card->brand;
             $this->card_last_four = $card->last4;
         }
@@ -532,7 +569,8 @@ trait Billable
      */
     protected function fillSepaDetails($sepa)
     {
-        if ($sepa && $sepa->sepa_debit) {
+        if ($sepa && $sepa->sepa_debit)
+        {
             $this->sepa_bank_code = $sepa->sepa_debit->bank_code;
             $this->sepa_country = $sepa->sepa_debit->country;
             $this->sepa_fingerprint = $sepa->sepa_debit->fingerprint;
@@ -551,7 +589,8 @@ trait Billable
      */
     public function deleteCards()
     {
-        $this->cards()->each(function ($card) {
+        $this->cards()->each(function ($card)
+        {
             $card->delete();
         });
     }
@@ -582,15 +621,19 @@ trait Billable
     {
         $subscription = $this->subscription($subscription);
 
-        if (! $subscription || ! $subscription->valid()) {
+        if (!$subscription || !$subscription->valid())
+        {
             return false;
         }
 
-        foreach ((array) $plans as $plan) {
-            if ($subscription->stripe_plan === $plan) {
+        foreach ((array) $plans as $plan)
+        {
+            if ($subscription->stripe_plan === $plan)
+            {
                 return true;
             }
-            if ($subscription->hasItem($plan)) {
+            if ($subscription->hasItem($plan))
+            {
                 return true;
             }
         }
@@ -608,7 +651,8 @@ trait Billable
     {
         $subscription = $this->subscriptionByPlan($plan);
 
-        if (!is_null($subscription)) {
+        if (!is_null($subscription))
+        {
             return $subscription->valid();
         }
 
@@ -622,7 +666,7 @@ trait Billable
      */
     public function hasStripeId()
     {
-        return ! is_null($this->stripe_id);
+        return !is_null($this->stripe_id);
     }
 
     /**
@@ -635,7 +679,7 @@ trait Billable
     public function createAsStripeCustomer($token, array $options = [])
     {
         $options = array_key_exists('email', $options)
-                ? $options : array_merge($options, ['email' => $this->email]);
+        ? $options : array_merge($options, ['email' => $this->email]);
 
         // Here we will create the customer instance on Stripe and store the ID of the
         // user from Stripe. This ID will correspond with the Stripe user instances
@@ -651,10 +695,14 @@ trait Billable
         // Next we will add the credit card to the user's account on Stripe using this
         // token that was provided to this method. This will allow us to bill users
         // when they subscribe to plans or we need to do one-off charges on them.
-        if (! is_null($token)) {
-            if (preg_match("/^src_(.*)/i", $token) > 0) {
+        if (!is_null($token))
+        {
+            if (preg_match("/^src_(.*)/i", $token) > 0)
+            {
                 $this->updateSepa($token);
-            } else {
+            }
+            else
+            {
                 $this->updateCard($token);
             }
         }
@@ -699,11 +747,13 @@ trait Billable
      */
     public static function getStripeKey()
     {
-        if (static::$stripeKey) {
+        if (static::$stripeKey)
+        {
             return static::$stripeKey;
         }
 
-        if ($key = getenv('STRIPE_SECRET')) {
+        if ($key = getenv('STRIPE_SECRET'))
+        {
             return $key;
         }
 
@@ -750,7 +800,7 @@ trait Billable
     public function subscriptionItem($plan)
     {
         $itemsTable = (new SubscriptionItem)->getTable();
-        return $this->subscriptionItems()->where($itemsTable.'.stripe_plan', $plan)->orderBy($itemsTable.'.created_at', 'desc')->first();
+        return $this->subscriptionItems()->where($itemsTable . '.stripe_plan', $plan)->orderBy($itemsTable . '.created_at', 'desc')->first();
     }
 
     /**
@@ -765,7 +815,8 @@ trait Billable
     {
         $subscription = $this->subscription($subscription);
 
-        if (!is_null($subscription)) {
+        if (!is_null($subscription))
+        {
             return $subscription->addItem($plan, $prorate, $quantity);
         }
 
@@ -782,7 +833,8 @@ trait Billable
     {
         $subscription = $this->subscription($subscription);
 
-        if (is_null($subscription)) {
+        if (is_null($subscription))
+        {
             return null;
         }
 
@@ -799,13 +851,15 @@ trait Billable
     {
         $subscription = $this->subscriptions()->where('stripe_plan', $plan)->first();
 
-        if (!is_null($subscription)) {
+        if (!is_null($subscription))
+        {
             return $subscription;
         }
 
         $item = $this->subscriptionItem($plan);
 
-        if (is_null($item)) {
+        if (is_null($item))
+        {
             return null;
         }
 

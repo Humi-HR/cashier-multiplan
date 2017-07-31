@@ -1,11 +1,11 @@
 <?php
 
-namespace Jurihub\CashierMultiplan;
+namespace Laravel\Cashier;
 
 use Carbon\Carbon;
-use LogicException;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Model;
+use LogicException;
 
 class Subscription extends Model
 {
@@ -87,7 +87,7 @@ class Subscription extends Model
      */
     public function cancelled()
     {
-        return ! is_null($this->ends_at);
+        return !is_null($this->ends_at);
     }
 
     /**
@@ -97,9 +97,12 @@ class Subscription extends Model
      */
     public function onTrial()
     {
-        if (! is_null($this->trial_ends_at)) {
+        if (!is_null($this->trial_ends_at))
+        {
             return Carbon::today()->lt($this->trial_ends_at);
-        } else {
+        }
+        else
+        {
             return false;
         }
     }
@@ -111,9 +114,12 @@ class Subscription extends Model
      */
     public function onGracePeriod()
     {
-        if (! is_null($endsAt = $this->ends_at)) {
+        if (!is_null($endsAt = $this->ends_at))
+        {
             return Carbon::now()->lt(Carbon::instance($endsAt));
-        } else {
+        }
+        else
+        {
             return false;
         }
     }
@@ -202,7 +208,8 @@ class Subscription extends Model
      */
     public function anchorBillingCycleOn($date = 'now')
     {
-        if ($date instanceof DateTimeInterface) {
+        if ($date instanceof DateTimeInterface)
+        {
             $date = $date->getTimestamp();
         }
 
@@ -239,23 +246,28 @@ class Subscription extends Model
 
         $subscription->prorate = $this->prorate;
 
-        if (! is_null($this->billingCycleAnchor)) {
+        if (!is_null($this->billingCycleAnchor))
+        {
             $subscription->billingCycleAnchor = $this->billingCycleAnchor;
         }
 
         // If no specific trial end date has been set, the default behavior should be
         // to maintain the current trial state, whether that is "active" or to run
         // the swap out with the exact number of days left on this current plan.
-        if ($this->onTrial()) {
+        if ($this->onTrial())
+        {
             $subscription->trial_end = $this->trial_ends_at->getTimestamp();
-        } else {
+        }
+        else
+        {
             $subscription->trial_end = 'now';
         }
 
         // Again, if no explicit quantity was set, the default behaviors should be to
         // maintain the current quantity onto the new plan. This is a sensible one
         // that should be the expected behavior for most developers with Stripe.
-        if ($this->quantity) {
+        if ($this->quantity)
+        {
             $subscription->quantity = $this->quantity;
         }
 
@@ -285,9 +297,12 @@ class Subscription extends Model
         // If the user was on trial, we will set the grace period to end when the trial
         // would have ended. Otherwise, we'll retrieve the end of the billing period
         // period and make that the end of the grace period for this current user.
-        if ($this->onTrial()) {
+        if ($this->onTrial())
+        {
             $this->ends_at = $this->trial_ends_at;
-        } else {
+        }
+        else
+        {
             $this->ends_at = Carbon::createFromTimestamp(
                 $subscription->current_period_end
             );
@@ -333,11 +348,13 @@ class Subscription extends Model
      */
     public function resume()
     {
-        if (! $this->onGracePeriod()) {
+        if (!$this->onGracePeriod())
+        {
             throw new LogicException('Unable to resume subscription that is not within grace period.');
         }
-        
-        if (!$this->subscriptionItems->isEmpty()) {
+
+        if (!$this->subscriptionItems->isEmpty())
+        {
             throw new LogicException("Cannot update using plan parameter when multiple plans exist on the subscription. Updates must be made to individual items instead.");
         }
 
@@ -348,9 +365,12 @@ class Subscription extends Model
         // where we left off. Then, we'll set the proper trial ending timestamp.
         $subscription->plan = $this->stripe_plan;
 
-        if ($this->onTrial()) {
+        if ($this->onTrial())
+        {
             $subscription->trial_end = $this->trial_ends_at->getTimestamp();
-        } else {
+        }
+        else
+        {
             $subscription->trial_end = 'now';
         }
 
@@ -373,7 +393,7 @@ class Subscription extends Model
     {
         return $this->user->asStripeCustomer()->subscriptions->retrieve($this->stripe_id);
     }
-    
+
     /**
      * Get the subscription items for the model.
      *
@@ -383,7 +403,7 @@ class Subscription extends Model
     {
         return $this->hasMany(SubscriptionItem::class, $this->getForeignKey())->orderBy('created_at', 'desc');
     }
-    
+
     /**
      * Adds a plan to the subscription
      *
@@ -395,24 +415,24 @@ class Subscription extends Model
     {
         // retrieves the subscription stored at Stripe
         $stripeSubscription = $this->asStripeSubscription();
-        
+
         // adds the new item at Stripe
         $stripeSubscriptionItem = $stripeSubscription->items->create([
             'plan' => $plan,
             'prorate' => $prorate,
             'quantity' => $quantity,
         ]);
-        
+
         // saves the new item in the database
         $this->subscriptionItems()->create([
             'stripe_id' => $stripeSubscriptionItem->id,
             'stripe_plan' => $plan,
             'quantity' => $quantity,
         ]);
-        
+
         return $this;
     }
-    
+
     /**
      * Adds a plan from the subscription
      *
@@ -422,26 +442,27 @@ class Subscription extends Model
     public function removeItem($plan, $prorate = true)
     {
         $item = $this->subscriptionItems()->where('stripe_plan', $plan)->first();
-        
-        if (is_null($item)) {
+
+        if (is_null($item))
+        {
             // item not found
             return $this;
         }
-        
+
         // retrieves the item stored at Stripe
         $stripeItem = $item->asStripeSubscriptionItem();
-        
+
         // deletes the item at Stripe
         $stripeItem->delete([
             'prorate' => $prorate,
         ]);
-        
+
         // removes the item from the database
         $this->subscriptionItems()->where('stripe_plan', $plan)->delete();
-        
+
         return $this;
     }
-    
+
     /**
      * Gets the item by name
      *
@@ -452,10 +473,10 @@ class Subscription extends Model
     {
         return $this->subscriptionItems()->where('stripe_plan', $plan)->first();
     }
-    
+
     /**
      * Determines if the subscription contains the given plan
-     * 
+     *
      * @param string $plan The plan's ID
      * @return bool
      */

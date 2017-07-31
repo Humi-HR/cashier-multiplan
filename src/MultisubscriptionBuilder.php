@@ -1,8 +1,6 @@
 <?php
 
-namespace Jurihub\CashierMultiplan;
-
-use Carbon\Carbon;
+namespace Laravel\Cashier;
 
 class MultisubscriptionBuilder extends SubscriptionBuilder
 {
@@ -12,7 +10,7 @@ class MultisubscriptionBuilder extends SubscriptionBuilder
      * @var array
      */
     protected $plans = [];
-    
+
     /**
      * Create a new subscription builder instance.
      *
@@ -26,7 +24,7 @@ class MultisubscriptionBuilder extends SubscriptionBuilder
         $this->owner = $owner;
         $this->name = $name;
     }
-    
+
     /**
      * Add a new Stripe subscription to the Stripe model.
      *
@@ -38,7 +36,7 @@ class MultisubscriptionBuilder extends SubscriptionBuilder
         $this->plans[$code] = $quantity;
         return $this;
     }
-    
+
     /**
      * Creates a new Stripe subscription with multiple plans.
      *
@@ -52,12 +50,15 @@ class MultisubscriptionBuilder extends SubscriptionBuilder
 
         $stripeSubscription = $customer->subscriptions->create($this->buildPayload());
 
-        if ($this->skipTrial) {
+        if ($this->skipTrial)
+        {
             $trialEndsAt = null;
-        } else {
+        }
+        else
+        {
             $trialEndsAt = $this->trialExpires;
         }
-        
+
         // registers the subscription
         $subscription = $this->owner->subscriptions()->create([
             'name' => $this->name,
@@ -67,19 +68,20 @@ class MultisubscriptionBuilder extends SubscriptionBuilder
             'trial_ends_at' => $trialEndsAt,
             'ends_at' => null,
         ]);
-        
+
         // registers the subscription's items
-        foreach ($stripeSubscription->items->data as $item) {
+        foreach ($stripeSubscription->items->data as $item)
+        {
             $subscription->subscriptionItems()->create([
                 'stripe_id' => $item['id'],
                 'stripe_plan' => $item['plan']['id'],
                 'quantity' => $item['quantity'],
             ]);
         }
-        
+
         return $subscription;
     }
-    
+
     /**
      * Build the payload for subscription creation.
      *
@@ -95,12 +97,16 @@ class MultisubscriptionBuilder extends SubscriptionBuilder
             'metadata' => $this->metadata,
         ]);
     }
-    
+
+    /**
+     * @return mixed
+     */
     protected function buildPayloadItems()
     {
         $items = [];
-        foreach ($this->plans as $plan => $quantity) {
-            array_push($items,[
+        foreach ($this->plans as $plan => $quantity)
+        {
+            array_push($items, [
                 'plan' => $plan,
                 'quantity' => $quantity,
             ]);
