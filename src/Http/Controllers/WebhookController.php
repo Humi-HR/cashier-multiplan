@@ -1,11 +1,11 @@
 <?php
 
-namespace Jurihub\CashierMultiplan\Http\Controllers;
+namespace Laravel\Cashier\Http\Controllers;
 
 use Exception;
 use Illuminate\Http\Request;
-use Stripe\Event as StripeEvent;
 use Illuminate\Routing\Controller;
+use Stripe\Event as StripeEvent;
 use Symfony\Component\HttpFoundation\Response;
 
 class WebhookController extends Controller
@@ -20,15 +20,19 @@ class WebhookController extends Controller
     {
         $payload = json_decode($request->getContent(), true);
 
-        if (! $this->isInTestingEnvironment() && ! $this->eventExistsOnStripe($payload['id'])) {
+        if (!$this->isInTestingEnvironment() && !$this->eventExistsOnStripe($payload['id']))
+        {
             return;
         }
 
-        $method = 'handle'.studly_case(str_replace('.', '_', $payload['type']));
+        $method = 'handle' . studly_case(str_replace('.', '_', $payload['type']));
 
-        if (method_exists($this, $method)) {
+        if (method_exists($this, $method))
+        {
             return $this->{$method}($payload);
-        } else {
+        }
+        else
+        {
             return $this->missingMethod();
         }
     }
@@ -43,10 +47,13 @@ class WebhookController extends Controller
     {
         $user = $this->getUserByStripeId($payload['data']['object']['customer']);
 
-        if ($user) {
-            $user->subscriptions->filter(function ($subscription) use ($payload) {
+        if ($user)
+        {
+            $user->subscriptions->filter(function ($subscription) use ($payload)
+            {
                 return $subscription->stripe_id === $payload['data']['object']['id'];
-            })->each(function ($subscription) {
+            })->each(function ($subscription)
+            {
                 $subscription->markAsCancelled();
             });
         }
@@ -58,7 +65,7 @@ class WebhookController extends Controller
      * Get the billable entity instance by Stripe ID.
      *
      * @param  string  $stripeId
-     * @return \Jurihub\CashierMultiplan\Billable
+     * @return \Laravel\Cashier\Billable
      */
     protected function getUserByStripeId($stripeId)
     {
@@ -76,8 +83,10 @@ class WebhookController extends Controller
     protected function eventExistsOnStripe($id)
     {
         try {
-            return ! is_null(StripeEvent::retrieve($id, config('services.stripe.secret')));
-        } catch (Exception $e) {
+            return !is_null(StripeEvent::retrieve($id, config('services.stripe.secret')));
+        }
+        catch (Exception $e)
+        {
             return false;
         }
     }

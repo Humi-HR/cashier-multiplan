@@ -467,7 +467,7 @@ class Subscription extends Model
      * Gets the item by name
      *
      * @param string $plan The plan's ID
-     * @return Jurihub\CashierMultiplan\SubscriptionItem|null
+     * @return Laravel\Cashier\SubscriptionItem|null
      */
     public function subscriptionItem($plan)
     {

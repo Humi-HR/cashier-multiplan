@@ -132,7 +132,7 @@ trait Billable
      *
      * @param  string  $subscription
      * @param  string  $plan
-     * @return \Jurihub\CashierMultiplan\SubscriptionBuilder
+     * @return \Laravel\Cashier\SubscriptionBuilder
      */
     public function newSubscription($subscription, $plan)
     {
@@ -214,7 +214,7 @@ trait Billable
      * Get a subscription instance by name.
      *
      * @param  string  $subscription
-     * @return \Jurihub\CashierMultiplan\Subscription|null
+     * @return \Laravel\Cashier\Subscription|null
      */
     public function subscription($subscription = 'default')
     {
@@ -262,7 +262,7 @@ trait Billable
     /**
      * Get the entity's upcoming invoice.
      *
-     * @return \Jurihub\CashierMultiplan\Invoice|null
+     * @return \Laravel\Cashier\Invoice|null
      */
     public function upcomingInvoice()
     {
@@ -283,7 +283,7 @@ trait Billable
      * Find an invoice by ID.
      *
      * @param  string  $id
-     * @return \Jurihub\CashierMultiplan\Invoice|null
+     * @return \Laravel\Cashier\Invoice|null
      */
     public function findInvoice($id)
     {
@@ -300,7 +300,7 @@ trait Billable
      * Find an invoice or throw a 404 error.
      *
      * @param  string  $id
-     * @return \Jurihub\CashierMultiplan\Invoice
+     * @return \Laravel\Cashier\Invoice
      */
     public function findInvoiceOrFail($id)
     {
@@ -776,7 +776,7 @@ trait Billable
      *
      * @param  string  $subscription
      * @param  string  $plan
-     * @return \Jurihub\CashierMultiplan\SubscriptionBuilder
+     * @return \Laravel\Cashier\SubscriptionBuilder
      */
     public function newMultisubscription($name = 'default')
     {
@@ -795,7 +795,7 @@ trait Billable
      * Gets a subscription item instance by name.
      *
      * @param  string  $plan
-     * @return \Jurihub\CashierMultiplan\SubscriptionItem|null
+     * @return \Laravel\Cashier\SubscriptionItem|null
      */
     public function subscriptionItem($plan)
     {
@@ -809,7 +809,7 @@ trait Billable
      * @param string $plan The plan's ID
      * @param integer $quantity The plan's quantity
      * @param string $subscription The subscription's name
-     * @return \Jurihub\CashierMultiplan\Subscription
+     * @return \Laravel\Cashier\Subscription
      */
     public function addPlan($plan, $prorate = true, $quantity = 1, $subscription = 'default')
     {
@@ -827,7 +827,7 @@ trait Billable
      * Removes a plan from the model's subscription
      *
      * @param string $plan The plan's ID
-     * @return \Jurihub\CashierMultiplan\Subscription|null
+     * @return \Laravel\Cashier\Subscription|null
      */
     public function removePlan($plan, $prorate = true, $subscription = 'default')
     {
@@ -845,7 +845,7 @@ trait Billable
      * Gets the subscription that contains the given plan
      *
      * @param string $plan The plan's ID
-     * @return \Jurihub\CashierMultiplan\Subscription|null
+     * @return \Laravel\Cashier\Subscription|null
      */
     public function subscriptionByPlan($plan)
     {

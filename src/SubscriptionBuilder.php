@@ -158,7 +158,7 @@ class SubscriptionBuilder
      * Add a new Stripe subscription to the Stripe model.
      *
      * @param  array  $options
-     * @return \Jurihub\CashierMultiplan\Subscription
+     * @return \Laravel\Cashier\Subscription
      */
     public function add(array $options = [])
     {
@@ -170,7 +170,7 @@ class SubscriptionBuilder
      *
      * @param  string|null  $token
      * @param  array  $options
-     * @return \Jurihub\CashierMultiplan\Subscription
+     * @return \Laravel\Cashier\Subscription
      */
     public function create($token = null, array $options = [])
     {
